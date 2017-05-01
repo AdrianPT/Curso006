@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Curso006.Models;
 
 namespace Curso006
 {  //ghs
@@ -34,8 +36,20 @@ namespace Curso006
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             // Add framework services.
-            services.AddApplicationInsightsTelemetry(Configuration);
+           services.AddApplicationInsightsTelemetry(Configuration);
+
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+
+
 
             services.AddMvc();
         }
@@ -46,7 +60,7 @@ namespace Curso006
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseApplicationInsightsRequestTelemetry();
+          
 
             if (env.IsDevelopment())
             {
@@ -58,9 +72,12 @@ namespace Curso006
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseApplicationInsightsExceptionTelemetry();
+
 
             app.UseStaticFiles();
+
+
+            app.UseIdentity();
 
             app.UseMvc(routes =>
             {
